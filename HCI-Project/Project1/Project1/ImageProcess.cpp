@@ -51,41 +51,127 @@ string chooseImage() {
 	return res;
 }
 
-// 흑백과 컬러 구분해서 하려햇으나 우리 눈엔 흑백인 이미지도 rgb채널을 가지고 있음
-// 가지고 있는 이미지들은 전처리로 흑백으로 만들든 해야할 듯
+
+Mat sobel(Mat gray);
+Mat canny(Mat src);
+
+
 Mat extract(Mat img) {
-	cout << img.channels() << endl;
+	//0. Source Image
+	// imshow("img", img);
 
-	Mat img_gray;
-	cvtColor(img, img_gray, COLOR_BGR2GRAY);
-	//imshow("img_gray", img_gray);
+	//2. Convert to gray and normalize
+	Mat gray(img.rows, img.cols, CV_8UC1);
+	cvtColor(img, gray, COLOR_BGR2GRAY);
+	normalize(gray, gray, 0, 255, NORM_MINMAX, CV_8UC1);
+	// imshow("2. Grayscale", gray);
 
-	// 컬러 도안
-	if (img.channels() != 1) {
-		Mat mask;	// 흑백 이미지를 임계값으로 이진화해 마스크 생성
-		adaptiveThreshold(img_gray, mask, 255, THRESH_BINARY, ADAPTIVE_THRESH_GAUSSIAN_C, 5, 10);
-		//imshow("mask", mask);
-
-		// 해당 마스크의 역처리
-		Mat mask_inv;
-		bitwise_not(mask, mask_inv);
-
-		// 워터마크 이미지에서 워터마크 영역만 추출(and 비트연산, 역 마스크 영역)
-		Mat img_result;
-		bitwise_and(img, img, img_result, mask = mask_inv);
-		imshow("img_result", img_result);
-		return img_result;
-
+	//3. Edge detector
+	GaussianBlur(gray, gray, Size(3, 3), 0, 0, BORDER_DEFAULT);
+	Mat edges;
+	bool useCanny = false;
+	if (useCanny) {
+		edges = canny(gray);
 	}
-	// 흑백 도안
 	else {
-		Mat img_binary;
-		threshold(img_gray, img_binary, 0, 255, THRESH_BINARY | THRESH_OTSU);
-		//imshow("img_binary", img_binary);
-
-		CEdge ce;
-		Mat img_edge = ce.GS_canny_edge_Canny(img_binary, 50, 100);
-		imshow("img_edge", img_edge);
-		return img_edge;
+		//Use Sobel filter and thresholding.
+		edges = sobel(gray);
+		//Automatic thresholding
+		//threshold(edges, edges, 0, 255, cv::THRESH_OTSU);
+		//Manual thresholding
+		threshold(edges, edges, 25, 255, cv::THRESH_BINARY);
 	}
+
+	// imshow("3. Edge Detector", edges);
+
+	//4. Dilate
+	Mat dilateGrad = edges;
+	int dilateType = MORPH_ELLIPSE;
+	int dilateSize = 3;
+	Mat elementDilate = getStructuringElement(dilateType,
+		Size(2 * dilateSize + 1, 2 * dilateSize + 1),
+		Point(dilateSize, dilateSize));
+	dilate(edges, dilateGrad, elementDilate);
+	// imshow("4. Dilate", dilateGrad);
+
+	//5. Floodfill
+	Mat floodFilled = cv::Mat::zeros(dilateGrad.rows + 2, dilateGrad.cols + 2, CV_8U);
+	floodFill(dilateGrad, floodFilled, cv::Point(0, 0), 0, 0, cv::Scalar(), cv::Scalar(), 4 + (255 << 8) + cv::FLOODFILL_MASK_ONLY);
+	floodFilled = cv::Scalar::all(255) - floodFilled;
+	Mat temp;
+	floodFilled(Rect(1, 1, dilateGrad.cols - 2, dilateGrad.rows - 2)).copyTo(temp);
+	floodFilled = temp;
+	// imshow("5. Floodfill", floodFilled);
+
+	//6. Erode
+	int erosionType = MORPH_ELLIPSE;
+	int erosionSize = 4;
+	Mat erosionElement = getStructuringElement(erosionType,
+		Size(2 * erosionSize + 1, 2 * erosionSize + 1),
+		Point(erosionSize, erosionSize));
+	erode(floodFilled, floodFilled, erosionElement);
+	// imshow("6. Erode", floodFilled);
+
+	//7. Find largest contour
+	int largestArea = 0;
+	int largestContourIndex = 0;
+	Rect boundingRectangle;
+	Mat largestContour(img.rows, img.cols, CV_8UC1, Scalar::all(0));
+	vector<vector<Point>> contours;
+	vector<Vec4i> hierarchy;
+
+	findContours(floodFilled, contours, hierarchy, RETR_CCOMP, CHAIN_APPROX_SIMPLE);
+
+	for (int i = 0; i < contours.size(); i++)
+	{
+		double a = contourArea(contours[i], false);
+		if (a > largestArea)
+		{
+			largestArea = a;
+			largestContourIndex = i;
+			boundingRectangle = boundingRect(contours[i]);
+		}
+	}
+
+	Scalar color(255, 255, 255);
+	drawContours(largestContour, contours, largestContourIndex, color, FILLED, 8, hierarchy); //Draw the largest contour using previously stored index.
+	rectangle(img, boundingRectangle, Scalar(0, 255, 0), 1, 8, 0);
+	// imshow("7. Largest Contour", largestContour);
+
+	//8. Mask original image
+	Mat maskedSrc;
+	img.copyTo(maskedSrc, largestContour);
+	imshow("8. Masked Source", maskedSrc);
+
+	return maskedSrc;
+}
+
+Mat sobel(Mat gray) {
+	Mat edges;
+
+	int scale = 1;
+	int delta = 0;
+	int ddepth = CV_16S;
+	Mat edges_x, edges_y;
+	Mat abs_edges_x, abs_edges_y;
+	Sobel(gray, edges_x, ddepth, 1, 0, 3, scale, delta, BORDER_DEFAULT);
+	convertScaleAbs(edges_x, abs_edges_x);
+	Sobel(gray, edges_y, ddepth, 0, 1, 3, scale, delta, BORDER_DEFAULT);
+	convertScaleAbs(edges_y, abs_edges_y);
+	addWeighted(abs_edges_x, 0.5, abs_edges_y, 0.5, 0, edges);
+
+	return edges;
+}
+
+Mat canny(Mat src)
+{
+	Mat detected_edges;
+
+	int edgeThresh = 1;
+	int lowThreshold = 250;
+	int highThreshold = 750;
+	int kernel_size = 5;
+	Canny(src, detected_edges, lowThreshold, highThreshold, kernel_size);
+
+	return detected_edges;
 }
