@@ -12,14 +12,12 @@ using namespace cv;
 using namespace std;
 
 int main() {
-	string image = chooseImage();		// ImageProcess.cpp ¿¡¼­ ±¸Çö
-	cout << image << endl;
-	Mat blendImg = imread(image, 1);
+	Mat blendImg = chooseImage();
 	//imshow("blending",blendImg);
 
-	// ºñµð¿À ÀÌ¹ÌÁö ºÒ·¯¿À±â 
+	// ë¹„ë””ì˜¤ ì´ë¯¸ì§€ ë¶ˆëŸ¬ì˜¤ê¸° 
 	VideoCapture cam(0);
-	// ¿ø·¡ÀÇ ¿À¸®Áö³Î ÀÌ¹ÌÁö 
+	// ì›ëž˜ì˜ ì˜¤ë¦¬ì§€ë„ ì´ë¯¸ì§€ 
 	cam.set(CV_CAP_PROP_FRAME_WIDTH, CAM_WIDTH);
 	cam.set(CV_CAP_PROP_FRAME_HEIGHT, CAM_HEIGHT);
 	Mat Origin_frame;
@@ -32,45 +30,45 @@ int main() {
 			break;
 		}
 
-		// ¸¶½ºÅ©¸¦ ÀÌ¿ëÇÑ ÀüÃ³¸®
+		// ë§ˆìŠ¤í¬ë¥¼ ì´ìš©í•œ ì „ì²˜ë¦¬
 		resize(HAND_MASK, HAND_MASK, Size(Origin_frame.cols, Origin_frame.rows), 0, 0, CV_INTER_LINEAR);
 
 		Mat Mask = Origin_frame + HAND_MASK;
 
-		// 3¹ø ÄÃ·¯ ¸ðµ¨ Àû¿ë 
+		// 3ë²ˆ ì»¬ëŸ¬ ëª¨ë¸ ì ìš© 
 		Mat YCrCb;
 		cvtColor(Mask, YCrCb, CV_BGR2YCrCb);
 
-		// 4¹ø ÇÇºÎ ºÎºÐ ÃßÃâ 
+		// 4ë²ˆ í”¼ë¶€ ë¶€ë¶„ ì¶”ì¶œ 
 		Mat Skin_Area;
 		inRange(YCrCb, Scalar(0, 130, 90), Scalar(255, 168, 130), Skin_Area);
 		imshow("Skin_Area", Skin_Area);
 
-		// Áß½ÉÁ¡ Ã£±â 
+		// ì¤‘ì‹¬ì  ì°¾ê¸° 
 		Moments m = moments(Skin_Area, true);
 		Point p(m.m10 / m.m00, m.m01 / m.m00);
 		cout << p.x <<"  "<<p.y<< endl;
 
 
-		// 5¹ø ÇÇºÎ ºÎºÐ ¿µ»ó¸¸ Àß¶ó³»±â  
+		// 5ë²ˆ í”¼ë¶€ ë¶€ë¶„ ì˜ìƒë§Œ ìž˜ë¼ë‚´ê¸°  
 		cvtColor(Skin_Area, Skin_Area, CV_GRAY2BGR);
 		Mat image_copy = Mask + (~Skin_Area);
 		imshow("temp", image_copy);
 		
 
 		//https://velog.io/@oosiz/OpenCV-Python-%EB%8B%A4%EB%A5%B8-%ED%81%AC%EA%B8%B0-%EC%9D%B4%EB%AF%B8%EC%A7%80-%EB%B8%94%EB%A0%8C%EB%94%A9
-		// ÇÕ¼ºÇÒ ÀÌ¹ÌÁö¿¡¼­ Ä³¸¯ÅÍ ºÎºÐ¸¸ ÃßÃâ
+		// í•©ì„±í•  ì´ë¯¸ì§€ì—ì„œ ìºë¦­í„° ë¶€ë¶„ë§Œ ì¶”ì¶œ
 		
 		Mat img_small;
-		resize(blendImg, img_small, Size(100, 100));	// ÀÌ¹ÌÁö Å©±â ÁÙÀÌ±â
+		resize(blendImg, img_small, Size(100, 100));	// ì´ë¯¸ì§€ í¬ê¸° ì¤„ì´ê¸°
 
-		Mat img2_fg = extract(img_small);	// Å©±â ÁÙÀÎ µµ¾È°ú ±×°ÍÀÇ ¿öÅÍ¸¶Å© ºÎºÐ¸¸ ÃßÃâÇÑ µµ¾È ¹ÝÈ¯ 
+		Mat img2_fg = extract(img_small);	// í¬ê¸° ì¤„ì¸ ë„ì•ˆê³¼ ê·¸ê²ƒì˜ ì›Œí„°ë§ˆí¬ ë¶€ë¶„ë§Œ ì¶”ì¶œí•œ ë„ì•ˆ ë°˜í™˜ 
 
 
-		// ¹è°æ ÀÌ¹ÌÁöÀÇ Region Of Interest ±¸ÇÏ±â
+		// ë°°ê²½ ì´ë¯¸ì§€ì˜ Region Of Interest êµ¬í•˜ê¸°
 		Mat roi = ROI(img_small, image_copy, img2_fg, p);
 
-		// ¹è°æ ÀÌ¹ÌÁöÀÇ ROI¿µ¿ª°ú ¿öÅÍ¸¶Å© ÀÌ¹ÌÁöÀÇ ¿öÅÍ¸¶Å© ¿µ¿ªÀ» ºí·»µù
+		// ë°°ê²½ ì´ë¯¸ì§€ì˜ ROIì˜ì—­ê³¼ ì›Œí„°ë§ˆí¬ ì´ë¯¸ì§€ì˜ ì›Œí„°ë§ˆí¬ ì˜ì—­ì„ ë¸”ë Œë”©
 		
 
 
