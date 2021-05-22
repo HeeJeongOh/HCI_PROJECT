@@ -1,10 +1,10 @@
 ﻿#include "ImageProcess.h"
 using namespace std;
 
-string chooseImage() {
+Mat chooseImage() {
 	int k;
-	string res;
-
+	Mat res;
+	string path;
 	Mat example = imread("image/all.png");
 	imshow("Example", example);
 	waitKey(1);
@@ -14,36 +14,38 @@ string chooseImage() {
 	switch (k) {
 	case 0:
 		cout << "파일 경로를 입력해 주세요." << endl;
-		cin >> res;
+		cin >> path;
+		res = imread(path);
+		break;
 	case 1:
-		res = "image/1.jpg";
+		res = imread("image/1.jpg");
 		break;
 	case 2:
-		res = "image/2.jpg";
+		res = imread("image/2.jpg");
 		break;
 	case 3:
-		res = "image/3.jpg";
+		res = imread("image/3.jpg");
 		break;
 	case 4:
-		res = "image/4.jpg";
+		res = imread("image/4.jpg");
 		break;
 	case 5:
-		res = "image/5.jpg";
+		res = imread("image/5.jpg");
 		break;
 	case 6:
-		res = "image/6.jpg";
+		res = imread("image/6.jpg");
 		break;
 	case 7:
-		res = "image/7.jpg";
+		res = imread("image/7.jpg");
 		break;
 	case 8:
-		res = "image/8.jpg";
+		res = imread("image/8.jpg");
 		break;
 	case 9:
-		res = "image/9.jpg";
+		res = imread("image/9.jpg");
 		break;
 	case 10:
-		res = "image/10.jpg";
+		res = imread("image/10.jpg");
 		break;
 	default:
 		cout << "잘못된 입력입니다." << endl;
@@ -72,13 +74,13 @@ Mat extract(Mat img) {
 	Mat opening;
 	dilate(erosion, opening, kernel);
 	imshow("opening", opening);
+	cvtColor(opening, opening, COLOR_GRAY2BGR);
 
 	// step3 :: tophat
-	Mat tophat = gray - opening;
+	Mat tophat = img - opening;
 	imshow("tophat", tophat);
 
-	Mat result;
-	cvtColor(tophat, result, COLOR_GRAY2BGR);
+	Mat result = tophat.clone();
 
 	return result;
 }
