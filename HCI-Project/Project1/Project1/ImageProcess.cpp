@@ -56,77 +56,28 @@ Mat extract(Mat img) {
 	Mat gray(img.rows, img.cols, CV_8UC1);
 	cvtColor(img, gray, COLOR_BGR2GRAY);
 	normalize(gray, gray, 0, 255, NORM_MINMAX, CV_8UC1);
-	// imshow("2. Grayscale", gray);
+	imshow("gray", gray);
 
-	//3. Edge detector
-	Mat blur;
-	GaussianBlur(gray, blur, Size(3, 3), 0, 0, BORDER_DEFAULT);
+	// anchor SE의 중심점
+	// kernel이 커질수록 뚜렷해지지만 노이즈도 함께 증가
+	Mat kernel = getStructuringElement(MORPH_ELLIPSE, cv::Size(20, 20), cv::Point(1, 1));
 
-	Mat edges;
-	Canny(blur, edges, 250, 750, 5);
-	// imshow("3. Edge Detector", edges);
+	// step1 :: erosion
+	Mat erosion;
+	erode(gray, erosion, kernel);
+	imshow("erosion", erosion);
 
-	//4. Dilate
-	Mat dilation;
-	int dilateSize = 3;
-	Mat elementDilate = getStructuringElement(MORPH_ELLIPSE, Size(2 * dilateSize + 1, 2 * dilateSize + 1), Point(dilateSize, dilateSize));
-	dilate(edges, dilation, elementDilate);
-	// imshow("4. Dilate", dilation);
+	// step2 :: opening - dilation after erosion
+	Mat opening;
+	dilate(erosion, opening, kernel);
+	imshow("opening", opening);
 
-	//5. Floodfill
-	Mat floodFilled = cv::Mat::zeros(dilation.rows + 2, dilation.cols + 2, CV_8U);
-	floodFill(dilation, floodFilled, cv::Point(0, 0), 0, 0, cv::Scalar(), cv::Scalar(), 4 + (255 << 8) + cv::FLOODFILL_MASK_ONLY);
-	floodFilled = cv::Scalar::all(255) - floodFilled;
-	Mat temp;
-	floodFilled(Rect(1, 1, dilation.cols - 2, dilation.rows - 2)).copyTo(temp);
-	floodFilled = temp;
-	// imshow("5. Floodfill", floodFilled);
-
-	//6. Erode
-	int erosionSize = 4;
-	Mat erosionElement = getStructuringElement(MORPH_ELLIPSE, Size(2 * erosionSize + 1, 2 * erosionSize + 1), Point(erosionSize, erosionSize));
-	erode(floodFilled, floodFilled, erosionElement);
-	// imshow("6. Erode", floodFilled);
-
-	//7. Find largest contour
-	int largestArea = 0;
-	int largestContourIndex = 0;
-	Rect boundingRectangle;
-	Mat largestContour(img.rows, img.cols, CV_8UC1, Scalar::all(0));
-	vector<vector<Point>> contours;
-	vector<Vec4i> hierarchy;
-
-	findContours(floodFilled, contours, hierarchy, RETR_CCOMP, CHAIN_APPROX_SIMPLE);
-	for (int i = 0; i < contours.size(); i++) {
-		double a = contourArea(contours[i], false);
-		if (a > largestArea)
-		{
-			largestArea = a;
-			largestContourIndex = i;
-			boundingRectangle = boundingRect(contours[i]);
-		}
-	}
-
-	Scalar color(255, 255, 255);
-	drawContours(largestContour, contours, largestContourIndex, color, FILLED, 8, hierarchy); //Draw the largest contour using previously stored index.
-	rectangle(img, boundingRectangle, Scalar(0, 255, 0), 1, 8, 0);
-	// imshow("7. Largest Contour", largestContour);
-
-	//8. Mask original image
-	Mat maskedSrc;
-	img.copyTo(maskedSrc, largestContour);
-	imshow("8. Masked Source", maskedSrc);
-
-	Mat mask;
-	threshold(gray, mask, 100, 255, THRESH_BINARY);
-	imshow("thresh", mask);
-	resize(mask, mask, Size(img.cols, img.rows), 0, 0, INTER_LINEAR);
-
-	Mat object = gray - ~mask;
-	imshow("object", object);
+	// step3 :: tophat
+	Mat tophat = gray - opening;
+	imshow("tophat", tophat);
 
 	Mat result;
-	cvtColor(object, result, COLOR_GRAY2BGR);
+	cvtColor(tophat, result, COLOR_GRAY2BGR);
 
 	return result;
 }
