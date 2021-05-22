@@ -7,6 +7,7 @@ string chooseImage() {
 
 	Mat example = imread("image/all.png");
 	imshow("Example", example);
+	waitKey(1);
 
 	cout << "원하시는 이미지의 번호를 입력해주세요. (그 외 '0' 입력)" << endl;
 	cin >> k;
