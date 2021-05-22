@@ -3,6 +3,6 @@
 using namespace std;
 using namespace cv;
 
-string chooseImage();
+Mat chooseImage();
 
 Mat extract(Mat img);
