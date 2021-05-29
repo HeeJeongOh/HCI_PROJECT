@@ -20,26 +20,7 @@ Mat ROI(Mat back, Mat img, Point p){
         && backHeight + height / 2 <= back.rows) { // 피부가 인식 되었을 때 
         Mat roi = back(Rect(backWidth - width / 2, backHeight - height / 2, width, height));
 
-        Mat gray_img; // (3)
-        cvtColor(img, gray_img, COLOR_RGB2GRAY);
-
-        // img2_fg를 이진화 (4)
-        Mat binary_img;
-        threshold(gray_img, binary_img, 50, 255, THRESH_BINARY_INV);
-        imshow("binary_img", binary_img);
-
-        // img bitwise_not으로 흑백 바꿈 (5) 
-        Mat not_img;
-        bitwise_not(binary_img, not_img);
-        imshow("not_img", not_img);
-
-        // gray_img & not_img -> gray_binary
-        Mat gray_binary;
-        bitwise_and(gray_img, not_img, gray_binary); // -> 검정 배경에 이미지만 
-        imshow("gray_binary", gray_binary);
-
-        cvtColor(gray_binary, gray_binary, COLOR_GRAY2BGR);
-        addWeighted(roi, 1, gray_binary, 1, 0, roi);
+        addWeighted(roi, 1, img, 1, 0, roi);
         // add(roi, img2_fg, back); // 빵꾸뚫린 부분에 추출 이미지 add 
         // img2_fg.copyTo(roi);
         imshow("result11", back);
