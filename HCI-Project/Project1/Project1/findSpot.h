@@ -3,4 +3,4 @@
 
 using namespace cv;
 
-Mat ROI(Mat img, Mat back, Mat img2_fg, Point p);
+Mat ROI(Mat back, Mat img, Point p);
