@@ -66,7 +66,7 @@ int main() {
 
 
 		// 배경 이미지의 Region Of Interest 구하기
-		Mat roi = ROI(img_small, image_copy, img2_fg, p);
+		Mat roi = ROI(image_copy, img2_fg, p);
 
 		// 배경 이미지의 ROI영역과 워터마크 이미지의 워터마크 영역을 블렌딩
 		
