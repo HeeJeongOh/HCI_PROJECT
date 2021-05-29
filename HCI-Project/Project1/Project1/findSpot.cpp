@@ -3,31 +3,51 @@
 
 using namespace cv;
 
-Mat ROI(Mat img, Mat back, Mat img2_fg, Point p) {
-	// ÀÌ¹ÌÁöÀÇ ³ôÀÌ, ³Êºñ, Ã¤³Î ¼ö ±¸ÇÏ±â 
-	int width = img.cols;				// Å©±â ÁÙÀÎ µµ¾È 
-	int height = img.rows;
-	
-	int backWidth = p.x;		// original frame 
-	int backHeight = p.y;
+Mat ROI(Mat back, Mat img, Point p){
+    // ì´ë¯¸ì§€ì˜ ë†’ì´, ë„ˆë¹„, ì±„ë„ ìˆ˜ êµ¬í•˜ê¸° 
+    int width = img.cols;            // í¬ê¸° ì¤„ì¸ ë„ì•ˆ 
+    int height = img.rows;
 
-	// ¹è°æ ÀÌ¹ÌÁöÀÇ Region Of Interest ±¸ÇÏ±â
-	if (0 < backWidth
-		&& 0 < width
-		&& backWidth + width / 2 <= back.cols
-		&& 0 < backHeight
-		&& 0 < height
-		&& backHeight + height / 2 <= back.rows) { // ÇÇºÎ°¡ ÀÎ½Ä µÇ¾úÀ» ¶§ 
-		Mat roi = back(Rect(backWidth - width / 2, backHeight - height / 2, width, height));
+    int backWidth = p.x;      // original frame 
+    int backHeight = p.y;
 
-		// ¹è°æ ÀÌ¹ÌÁöÀÇ ROI¿µ¿ª°ú ¿öÅÍ¸¶Å© ÀÌ¹ÌÁöÀÇ ¿öÅÍ¸¶Å© ¿µ¿ªÀ» ºí·»µù
-		addWeighted(roi, 1, img2_fg, 0.5, 0, roi);
+    // ë°°ê²½ ì´ë¯¸ì§€ì˜ Region Of Interest êµ¬í•˜ê¸°
+    if (0 < backWidth
+        && 0 < width
+        && backWidth + width / 2 <= back.cols
+        && 0 < backHeight
+        && 0 < height
+        && backHeight + height / 2 <= back.rows) { // í”¼ë¶€ê°€ ì¸ì‹ ë˜ì—ˆì„ ë•Œ 
+        Mat roi = back(Rect(backWidth - width / 2, backHeight - height / 2, width, height));
 
-		imshow("result", back);
-	}
-	else {	// ÇÇºÎ°¡ ÀÎ½Ä µÇÁö ¾Ê¾ÒÀ» ¶§ 
-		imshow("result", back);
-	}
+        Mat gray_img; // (3)
+        cvtColor(img, gray_img, COLOR_RGB2GRAY);
 
-	return back;
+        // img2_fgë¥¼ ì´ì§„í™” (4)
+        Mat binary_img;
+        threshold(gray_img, binary_img, 50, 255, THRESH_BINARY_INV);
+        imshow("binary_img", binary_img);
+
+        // img bitwise_notìœ¼ë¡œ í‘ë°± ë°”ê¿ˆ (5) 
+        Mat not_img;
+        bitwise_not(binary_img, not_img);
+        imshow("not_img", not_img);
+
+        // gray_img & not_img -> gray_binary
+        Mat gray_binary;
+        bitwise_and(gray_img, not_img, gray_binary); // -> ê²€ì • ë°°ê²½ì— ì´ë¯¸ì§€ë§Œ 
+        imshow("gray_binary", gray_binary);
+
+        cvtColor(gray_binary, gray_binary, COLOR_GRAY2BGR);
+        addWeighted(roi, 1, gray_binary, 1, 0, roi);
+        // add(roi, img2_fg, back); // ë¹µê¾¸ëš«ë¦° ë¶€ë¶„ì— ì¶”ì¶œ ì´ë¯¸ì§€ add 
+        // img2_fg.copyTo(roi);
+        imshow("result11", back);
+    }
+    else {   // í”¼ë¶€ê°€ ì¸ì‹ ë˜ì§€ ì•Šì•˜ì„ ë•Œ 
+
+        imshow("result22", back);
+    }
+
+    return back;
 }
