@@ -80,7 +80,20 @@ Mat extract(Mat img) {
 	Mat tophat = img - opening;
 	imshow("tophat", tophat);
 
-	Mat result = tophat.clone();
+	// img2_fg를 이진화 (4)
+	Mat binary_img;
+	threshold(tophat, binary_img, 240, 255, THRESH_BINARY_INV);
+	imshow("binary_img", binary_img);
 
-	return result;
+	// img2_fg bitwise_not으로 흑백 바꿈 (5) 
+	Mat not_img;
+	bitwise_not(binary_img, not_img);
+	imshow("not_img", not_img);
+
+	Mat black;
+	// (2) + (4)를 and 연산 (6) 
+	bitwise_and(tophat, binary_img, black); // -> 검정 배경에 이미지만 
+	imshow("black", black);
+
+	return 	black;
 }
