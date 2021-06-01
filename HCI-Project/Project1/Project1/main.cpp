@@ -12,7 +12,7 @@ using namespace cv;
 using namespace std;
 
 int main() {
-		Mat blendImg;
+	Mat blendImg;
 	//imshow("blending",blendImg);
 
 	int idx;
