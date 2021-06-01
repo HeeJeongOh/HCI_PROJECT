@@ -1,59 +1,6 @@
 ﻿#include "ImageProcess.h"
 using namespace std;
 
-Mat chooseImage() {
-	int k;
-	Mat res;
-	string path;
-	Mat example = imread("image/all.png");
-	imshow("Example", example);
-	waitKey(1);
-
-	cout << "원하시는 이미지의 번호를 입력해주세요. (그 외 '0' 입력)" << endl;
-	cin >> k;
-	switch (k) {
-	case 0:
-		cout << "파일 경로를 입력해 주세요." << endl;
-		cin >> path;
-		res = imread(path);
-		break;
-	case 1:
-		res = imread("image/1.jpg");
-		break;
-	case 2:
-		res = imread("image/2.jpg");
-		break;
-	case 3:
-		res = imread("image/3.jpg");
-		break;
-	case 4:
-		res = imread("image/4.jpg");
-		break;
-	case 5:
-		res = imread("image/5.jpg");
-		break;
-	case 6:
-		res = imread("image/6.jpg");
-		break;
-	case 7:
-		res = imread("image/7.jpg");
-		break;
-	case 8:
-		res = imread("image/8.jpg");
-		break;
-	case 9:
-		res = imread("image/9.jpg");
-		break;
-	case 10:
-		res = imread("image/10.jpg");
-		break;
-	default:
-		cout << "잘못된 입력입니다." << endl;
-	}
-	return res;
-}
-
-
 Mat extract(Mat img) {
 	//2. Convert to gray and normalize
 	Mat gray(img.rows, img.cols, CV_8UC1);
