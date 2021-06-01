@@ -3,7 +3,7 @@
 
 using namespace cv;
 
-Mat ROI(Mat back, Mat img, Point p) {
+Mat ROI(Mat back, Mat img, Point p, int idx){
     // 이미지의 높이, 너비, 채널 수 구하기 
     int width = img.cols;            // 크기 줄인 도안 
     int height = img.rows;
@@ -66,10 +66,13 @@ Mat ROI(Mat back, Mat img, Point p) {
         // roi만큼 이미지 빼기 ?? 
         */
         
-        addWeighted(roi, 1, origin, -1, 0, roi);
-        // addWeighted(roi, 1, origin, 1, 0, roi); // -> 컬러이미지일 때는 주석 풀기 
-        
+        if(idx > 0 && idx < 6)
+            addWeighted(roi, 1, origin, -1, 0, roi);
+        else {
+            addWeighted(roi, 1, origin, 1, 0, roi); // -> 컬러이미지일 때는 주석 풀기 
+            // 대비 높이기
 
+        }
         imshow("result", back);
     }
     else {   // 피부가 인식 되지 않았을 때 
