@@ -5,7 +5,6 @@ Mat extract(Mat img) {
 	//2. Convert to gray and normalize
 	Mat gray(img.rows, img.cols, CV_8UC1);
 	cvtColor(img, gray, COLOR_BGR2GRAY);
-	normalize(gray, gray, 0, 255, NORM_MINMAX, CV_8UC1);
 	imshow("gray", gray);
 
 	// anchor SE의 중심점
