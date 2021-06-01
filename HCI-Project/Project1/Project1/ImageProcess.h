@@ -3,6 +3,4 @@
 using namespace std;
 using namespace cv;
 
-Mat chooseImage();
-
 Mat extract(Mat img);
