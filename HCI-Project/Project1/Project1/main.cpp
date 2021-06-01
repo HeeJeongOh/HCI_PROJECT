@@ -12,8 +12,57 @@ using namespace cv;
 using namespace std;
 
 int main() {
-	Mat blendImg = chooseImage();
+		Mat blendImg;
 	//imshow("blending",blendImg);
+
+	int idx;
+	string path;
+	Mat example = imread("image/all.png");
+	imshow("Example", example);
+	waitKey(1);
+
+	cout << "원하시는 이미지의 번호를 입력해주세요. (그 외 '0' 입력)" << endl;
+	cin >> idx;
+	switch (idx) {
+	case 0:
+		cout << "파일 경로를 입력해 주세요." << endl;
+		cin >> path;
+		blendImg = imread(path);
+		break;
+	case 1:
+		blendImg = imread("image/1.jpg");
+		break;
+	case 2:
+		blendImg = imread("image/2.jpg");
+		break;
+	case 3:
+		blendImg = imread("image/3.jpg");
+		break;
+	case 4:
+		blendImg = imread("image/4.jpg");
+		break;
+	case 5:
+		blendImg = imread("image/5.jpg");
+		break;
+	case 6:
+		blendImg = imread("image/6.jpg");
+		break;
+	case 7:
+		blendImg = imread("image/7.jpg");
+		break;
+	case 8:
+		blendImg = imread("image/8.jpg");
+		break;
+	case 9:
+		blendImg = imread("image/9.jpg");
+		break;
+	case 10:
+		blendImg = imread("image/10.jpg");
+		break;
+	default:
+		cout << "잘못된 입력입니다." << endl;
+	}
+
 
 	// 비디오 이미지 불러오기 
 	VideoCapture cam(0);
@@ -66,15 +115,9 @@ int main() {
 
 
 		// 배경 이미지의 Region Of Interest 구하기
-		Mat roi = ROI(image_copy, img2_fg, p);
+		Mat roi = ROI(image_copy, img2_fg, p, idx);
 
 		// 배경 이미지의 ROI영역과 워터마크 이미지의 워터마크 영역을 블렌딩
-		
-
-
-
-		
-
 
 		char c = (char)waitKey(10);
 		if (c == 27) break;
