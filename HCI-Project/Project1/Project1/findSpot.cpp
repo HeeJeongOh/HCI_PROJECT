@@ -3,7 +3,7 @@
 
 using namespace cv;
 
-Mat ROI(Mat img, Mat back, Mat img2_fg, Point p) {
+Mat ROI(Mat back, Mat img, Point p) {
     // 이미지의 높이, 너비, 채널 수 구하기 
     int width = img.cols;            // 크기 줄인 도안 
     int height = img.rows;
@@ -11,7 +11,7 @@ Mat ROI(Mat img, Mat back, Mat img2_fg, Point p) {
     int backWidth = p.x;      // original frame 
     int backHeight = p.y;
 
-    Mat origin = img2_fg;
+    Mat origin = img;
 
     // 배경 이미지의 Region Of Interest 구하기
     if (0 < backWidth
