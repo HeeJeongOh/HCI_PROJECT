@@ -3,4 +3,4 @@
 
 using namespace cv;
 
-Mat ROI(Mat back, Mat img, Point p, int idx);
+void ROI(Mat background, Mat add_img, Point mid, int x, int y, int idx);
