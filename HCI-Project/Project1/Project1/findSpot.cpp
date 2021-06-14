@@ -26,9 +26,7 @@ void ROI(Mat background, Mat add_img, Point mid, int x, int y, int idx) {
 		if (idx == 0)
 			addWeighted(roi, 1, origin, -1, 0, roi);
 		else {
-			// 대비 높이기
-
-			addWeighted(roi, 1, origin, 0.7, 0.1, roi); // -> 컬러이미지일 때는 주석 풀기 
+			addWeighted(roi, 1, origin, 1, 0, roi); // -> 컬러이미지일 때는 주석 풀기 		
 		}
 
 		imshow("result", background);
