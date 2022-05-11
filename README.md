@@ -1,6 +1,5 @@
 # HCI_PROJECT
-2021-1 HCI Team Project
-
+2021년도 1학기 DGU_HCI_project
 
 [전체 개요]
 
